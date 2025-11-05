@@ -8,8 +8,7 @@
     "build": "vite build",
     "lint": "eslint .",
     "preview": "vite preview",
-    "server": "node server/index.cjs",
-    "prebuild": "npm cache clean --force"
+    "server": "node server/index.cjs"
   },
   "dependencies": {
     "@capacitor/android": "^7.4.4",
