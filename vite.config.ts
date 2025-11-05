@@ -10,6 +10,7 @@ export default defineConfig(({ mode }) => {
     resolve: {
       alias: {
         '@': path.resolve('.', './src'),
+        '@hello-pangea/dnd': path.resolve('.', './node_modules/@hello-pangea/dnd')
       },
     },
     define: {
@@ -17,7 +18,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        external: ['@capgo/capacitor-social-login', '@hello-pangea/dnd']
+        external: ['@capgo/capacitor-social-login']
       }
     }
   }
