@@ -37,7 +37,8 @@
     "deep-email-validator": "^0.1.21",
     "nodemailer": "^6.9.14",
     "google-auth-library": "^10.5.0",
-    "tailwindcss-animate": "^1.0.7"
+    "tailwindcss-animate": "^1.0.7",
+    "react-countup": "^6.5.3"
   },
   "devDependencies": {
     "@types/react": "^18.3.5",
