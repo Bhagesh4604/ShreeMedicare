@@ -3,6 +3,12 @@ const router = express.Router();
 const { executeQuery } = require('./db.cjs');
 const { sendSms } = require('./sms.cjs');
 
+// Helper to generate a unique room URL (for Jitsi Meet for example)
+const generateRoomUrl = (appointmentId) => {
+    const roomName = `HMSConsultation-${appointmentId}-${Date.now()}`;
+    return `https://meet.jit.si/${roomName}`;
+};
+
 // Helper to generate a unique room URL (copied from virtualConsultations.cjs)
 const generateRoomUrl = (appointmentId) => {
     const roomName = `HMSConsultation-${appointmentId}-${Date.now()}`;
