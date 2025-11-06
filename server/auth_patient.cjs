@@ -154,10 +154,12 @@ router.post('/forgot-password', (req, res) => {
                 return res.status(500).json({ success: false, message: 'Failed to store password reset token.' });
             }
 
-            const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${token}`;
-            console.log('Password reset link:', resetLink);
-
-            res.json({ success: true, message: 'A password reset link has been logged to the server console.' });
+            sendPasswordResetEmail(email, token).then(() => {
+                res.json({ success: true, message: 'A password reset link has been sent to your email.' });
+            }).catch(err => {
+                console.error('Failed to send password reset email:', err);
+                res.status(500).json({ success: false, message: 'Failed to send password reset email.' });
+            });
         });
     });
 });
