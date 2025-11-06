@@ -36,7 +36,10 @@ router.put('/:id', (req, res) => {
     const { status } = req.body;
     const sql = 'UPDATE surgery_records SET status = ? WHERE id = ?';
     executeQuery(sql, [status, id], (err, result) => {
-        if (err) return res.status(500).json({ success: false, message: 'Failed to update surgery status' });
+        if (err) {
+            console.error('Error updating surgery status:', err);
+            return res.status(500).json({ success: false, message: 'Failed to update surgery status', error: err.message });
+        }
         res.json({ success: true, message: 'Surgery status updated!' });
     });
 });
