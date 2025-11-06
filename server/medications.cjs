@@ -85,7 +85,10 @@ router.post('/track', async (req, res) => {
 
         await new Promise((resolve, reject) => {
             executeQuery(sql, [patientId, prescriptionId, doseTime, status], (err, result) => {
-                if (err) return reject(err);
+                if (err) {
+                    console.error('Error executing medication tracking query:', err);
+                    return reject(err);
+                }
                 resolve(result);
             });
         });
