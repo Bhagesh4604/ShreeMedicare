@@ -56,7 +56,7 @@ router.get('/:id', (req, res) => {
 });
 
 router.post('/add', (req, res) => {
-  const { patientId, firstName, lastName, dateOfBirth, gender, bloodGroup, phone, email, address, emergencyContact, emergencyPhone } = req.body;
+    const patientId = `PAT-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
   const sql = `INSERT INTO patients (patientId, firstName, lastName, dateOfBirth, gender, bloodGroup, phone, email, address, emergencyContact, emergencyPhone, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
   const params = [patientId, firstName, lastName, dateOfBirth || null, gender, bloodGroup, phone, email, address, emergencyContact, emergencyPhone, 'active'];
   executeQuery(sql, params, (err, result) => {
