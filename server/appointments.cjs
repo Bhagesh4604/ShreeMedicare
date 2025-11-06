@@ -98,7 +98,12 @@ router.get('/today', (req, res) => {
 });
 
 
-router.post('/book-by-doctor', (req, res) => {
+const generateRoomUrl = (appointmentId) => {
+    const roomName = `HMSConsultation-${appointmentId}-${Date.now()}`;
+    return `https://meet.jit.si/${roomName}`;
+};
+
+router.post('/book-by-doctor', async (req, res) => {
     const { patientId, doctorId, appointmentDate, notes, consultationType } = req.body;
 
     if (!patientId || !doctorId || !appointmentDate) {
@@ -109,34 +114,69 @@ router.post('/book-by-doctor', (req, res) => {
         return res.status(400).json({ success: false, message: 'Cannot book an appointment in the past.' });
     }
 
-    const formattedAppointmentDate = new Date(appointmentDate).toISOString().slice(0, 19).replace('T', ' ');
-    const sql = "INSERT INTO appointments (patientId, doctorId, appointmentDate, notes, status, consultationType) VALUES (?, ?, ?, ?, 'scheduled', ?)";
-    
-    executeQuery(sql, [patientId, doctorId, formattedAppointmentDate, notes, consultationType], (err, result) => {
-        if (err) {
-            console.error("Error booking appointment by doctor:", err);
-            return res.status(500).json({ success: false, message: 'Database error while booking appointment.' });
-        }
+    try {
+        const formattedAppointmentDate = new Date(appointmentDate).toISOString().slice(0, 19).replace('T', ' ');
+        const result = await new Promise((resolve, reject) => {
+            const sql = "INSERT INTO appointments (patientId, doctorId, appointmentDate, notes, status, consultationType) VALUES (?, ?, ?, ?, 'scheduled', ?)";
+            executeQuery(sql, [patientId, doctorId, formattedAppointmentDate, notes, consultationType], (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+            });
+        });
 
-        // Send SMS confirmation
-        const getPatientPhoneSql = "SELECT phone FROM patients WHERE id = ?";
-        executeQuery(getPatientPhoneSql, [patientId], (err, patientResults) => {
-            if (err || patientResults.length === 0) {
-                console.error('Could not find patient to send SMS.');
-                // Still return success for the appointment booking
-                return res.status(201).json({ success: true, message: 'Appointment booked, but failed to send SMS.', id: result.insertId });
+        const appointmentId = result.insertId;
+
+        const details = await new Promise((resolve, reject) => {
+            const sql = `
+                SELECT 
+                    p.phone, 
+                    p.firstName as patientFirstName,
+                    CONCAT(e.firstName, ' ', e.lastName) as doctorName
+                FROM appointments a
+                JOIN patients p ON a.patientId = p.id
+                JOIN employees e ON a.doctorId = e.id
+                WHERE a.id = ?
+            `;
+            executeQuery(sql, [appointmentId], (err, results) => {
+                if (err) return reject(err);
+                resolve(results[0]);
+            });
+        });
+
+        if (details && details.phone) {
+            const apptDate = new Date(appointmentDate);
+            const formattedDate = apptDate.toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+            const formattedTime = apptDate.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+            let message = `Hi ${details.patientFirstName}, your appointment with Dr. ${details.doctorName} is confirmed for ${formattedDate} at ${formattedTime}.`;
+
+            if (consultationType === 'virtual') {
+                const roomUrl = generateRoomUrl(appointmentId);
+                const startTime = new Date(appointmentDate).toISOString();
+                const endTime = new Date(new Date(appointmentDate).getTime() + 30 * 60 * 1000).toISOString(); // 30 min duration
+
+                await new Promise((resolve, reject) => {
+                    const insertSql = 'INSERT INTO virtual_consultation_rooms (appointmentId, roomUrl, startTime, endTime, status) VALUES (?, ?, ?, ?, ?)';
+                    executeQuery(insertSql, [appointmentId, roomUrl, startTime, endTime, 'scheduled'], (err, result) => {
+                        if (err) return reject(err);
+                        resolve(result);
+                    });
+                });
+
+                message += ` Join here: ${roomUrl}`;
             }
 
-            const patientPhone = patientResults[0].phone;
-            const message = `Your appointment with Dr. ${doctorId} on ${new Date(appointmentDate).toLocaleString()} has been successfully booked.`;
-            
-            sendSms(patientPhone, message)
-                .then(smsResult => console.log('SMS sent for new appointment:', smsResult.sid))
-                .catch(smsError => console.error('SMS sending failed:', smsError));
+            await sendSms(details.phone, message);
+            console.log(`SMS notification sent to ${details.phone}`);
+        } else {
+            console.error(`Could not find details for appointment ID ${appointmentId} to send SMS.`);
+        }
 
-            res.status(201).json({ success: true, message: 'Appointment booked successfully!', id: result.insertId });
-        });
-    });
+        res.status(201).json({ success: true, message: 'Appointment booked successfully!', id: appointmentId });
+
+    } catch (err) {
+        console.error("Error booking appointment by doctor:", err);
+        res.status(500).json({ success: false, message: 'Database error while booking appointment.' });
+    }
 });
 
 module.exports = router;
