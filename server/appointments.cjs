@@ -195,7 +195,7 @@ router.post('/book-by-doctor', async (req, res) => {
             await sendSms(details.phone, message);
             console.log(`SMS notification sent to ${details.phone}`);
         } else {
-            console.error(`Could not find details for appointment ID ${appointmentId} to send SMS.`);
+            console.error(`Could not send SMS for appointment ID ${appointmentId} because phone number is missing.`);
         }
 
         res.status(201).json({ success: true, message: 'Appointment booked successfully!', id: appointmentId });

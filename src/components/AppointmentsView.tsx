@@ -64,10 +64,22 @@ export default function AppointmentsView({ user }) {
           ? apiUrl('/api/appointments/all')
           : apiUrl(`/api/appointments/doctor/${user.id}`);
         const response = await fetch(url);
+        if (!response.ok) {
+            const errorData = await response.json();
+            console.error('Error fetching appointments:', errorData);
+            setAppointments([]);
+            return;
+        }
         const data = await response.json();
-        setAppointments(Array.isArray(data) ? data : []);
+        if (Array.isArray(data)) {
+            setAppointments(data);
+        } else {
+            console.warn('API did not return an array for appointments:', data);
+            setAppointments([]);
+        }
       } catch (error) {
         console.error('Failed to fetch appointments:', error);
+        setAppointments([]);
       }
     };
 

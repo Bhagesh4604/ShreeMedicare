@@ -79,7 +79,10 @@ router.post('/medicines/add', (req, res) => {
     const { name, categoryId, description, dosageForm, strength, unitPrice, stockQuantity, reorderLevel } = req.body;
     const sql = 'INSERT INTO pharmaceuticals (name, categoryId, description, dosageForm, strength, unitPrice, stockQuantity, reorderLevel) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
     executeQuery(sql, [name, categoryId, description, dosageForm, strength, unitPrice, stockQuantity, reorderLevel], (err, result) => {
-        if (err) return res.status(500).json({ success: false, message: 'Failed to add medicine' });
+        if (err) {
+            console.error("Error adding medicine:", err);
+            return res.status(500).json({ success: false, message: 'Failed to add medicine' });
+        }
         res.json({ success: true, message: 'Medicine added successfully!', id: result.insertId });
     });
 });

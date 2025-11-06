@@ -146,8 +146,8 @@ router.post('/book-appointment', async (req, res) => {
             if (consultationType === 'virtual') {
                 console.log("Step 3: Creating virtual consultation room...");
                 const roomUrl = generateRoomUrl(appointmentId);
-                const startTime = new Date(appointmentDate).toISOString();
-                const endTime = new Date(new Date(appointmentDate).getTime() + 30 * 60 * 1000).toISOString(); // 30 min duration
+                const startTime = new Date(appointmentDate).toISOString().slice(0, 19).replace('T', ' ');
+                const endTime = new Date(new Date(appointmentDate).getTime() + 30 * 60 * 1000).toISOString().slice(0, 19).replace('T', ' '); // 30 min duration
 
                 await new Promise((resolve, reject) => {
                     const insertSql = 'INSERT INTO virtual_consultation_rooms (appointmentId, roomUrl, startTime, endTime, status) VALUES (?, ?, ?, ?, ?)';
