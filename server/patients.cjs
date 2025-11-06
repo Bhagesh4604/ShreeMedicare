@@ -132,6 +132,7 @@ router.get('/:patientId/full-history', async (req, res) => {
             `;
             executeQuery(sql, [patientDbId], (err, results) => {
                 if (err) return reject(err);
+                console.log('Appointments:', results);
                 resolve(results.map(item => ({ type: 'appointment', date: item.date, details: item })));
             });
         });
@@ -146,6 +147,7 @@ router.get('/:patientId/full-history', async (req, res) => {
             `;
             executeQuery(sql, [patientDbId], (err, results) => {
                 if (err) return reject(err);
+                console.log('Medical Records:', results);
                 resolve(results.map(item => ({ type: 'medical_record', date: item.date, details: item })));
             });
         });
@@ -160,6 +162,7 @@ router.get('/:patientId/full-history', async (req, res) => {
             `;
             executeQuery(sql, [patientDbId], (err, results) => {
                 if (err) return reject(err);
+                console.log('Lab Tests:', results);
                 resolve(results.map(item => ({ type: 'lab_test', date: item.date, details: item })));
             });
         });
@@ -174,6 +177,7 @@ router.get('/:patientId/full-history', async (req, res) => {
             `;
             executeQuery(sql, [patientDbId], (err, results) => {
                 if (err) return reject(err);
+                console.log('Prescriptions:', results);
                 resolve(results.map(item => ({ type: 'prescription', date: item.date, details: item })));
             });
         });
