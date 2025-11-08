@@ -337,26 +337,59 @@ router.post('/google-login', async (req, res) => {
 });
 
 // Verify Email
-router.get('/verify-email', (req, res) => {
+router.get('/verify-email', async (req, res) => {
     const { token } = req.query;
 
-    const sql = 'SELECT * FROM patients_auth WHERE verificationToken = ?';
-    executeQuery(sql, [token], (err, results) => {
-        if (err || results.length === 0) {
-            return res.status(400).json({ success: false, message: 'Invalid verification token.' });
+    if (!token) {
+        return res.status(400).json({ success: false, message: 'Verification token is missing.' });
+    }
+
+    let connection;
+    try {
+        connection = await new Promise((resolve, reject) => {
+            pool.getConnection((err, conn) => {
+                if (err) return reject(err);
+                resolve(conn);
+            });
+        });
+
+        const findUserSql = 'SELECT * FROM patients_auth WHERE verificationToken = ?';
+        const users = await new Promise((resolve, reject) => {
+            connection.query(findUserSql, [token], (err, results) => {
+                if (err) return reject(err);
+                resolve(results);
+            });
+        });
+
+        if (users.length === 0) {
+            return res.status(400).json({ success: false, message: 'Invalid or expired verification token.' });
         }
 
-        const patientAuth = results[0];
+        const patientAuth = users[0];
 
-        const updateSql = 'UPDATE patients_auth SET isVerified = ?, verificationToken = NULL WHERE id = ?';
-        executeQuery(updateSql, [true, patientAuth.id], (err, result) => {
-            if (err) {
-                return res.status(500).json({ success: false, message: 'Failed to verify email.' });
-            }
-
-            res.json({ success: true, message: 'Email has been verified successfully!' });
+        const updateSql = 'UPDATE patients_auth SET isVerified = 1, verificationToken = NULL WHERE id = ?';
+        const updateResult = await new Promise((resolve, reject) => {
+            connection.query(updateSql, [patientAuth.id], (err, result) => {
+                if (err) return reject(err);
+                resolve(result);
+            });
         });
-    });
+
+        if (updateResult.affectedRows === 0) {
+            // This case should ideally not be reached if the token was found.
+            // It could happen in a race condition if the link is clicked twice.
+            // We can treat it as a success from the user's perspective.
+            console.log(`Verification for user ${patientAuth.id} attempted, but no rows were updated. User might already be verified.`);
+        }
+
+        res.json({ success: true, message: 'Email has been verified successfully! Redirecting...' });
+
+    } catch (err) {
+        console.error('Email verification error:', err);
+        res.status(500).json({ success: false, message: 'An error occurred during email verification.' });
+    } finally {
+        if (connection) connection.release();
+    }
 });
 
 module.exports = router;
