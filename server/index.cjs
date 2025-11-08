@@ -23,8 +23,18 @@ wss.on('connection', (ws) => {
 // --- CHANGE 1: Use Render's environment variable for PORT ---
 const PORT = process.env.PORT || 8080;
 
+const allowedOrigins = ['https://localhost', 'http://localhost', 'capacitor://localhost', 'http://localhost:8100', 'https://shreemedicare1.onrender.com'];
+
 const corsOptions = {
-  origin: ['https://localhost', 'http://localhost', 'capacitor://localhost', 'http://localhost:8100', 'https://shreemedicare1.onrender.com'],
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) === -1) {
+      const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+      return callback(new Error(msg), false);
+    }
+    return callback(null, true);
+  },
   methods: 'GET,HEAD,PUT,PATCH,POST,DELETE',
   credentials: true,
   optionsSuccessStatus: 204
