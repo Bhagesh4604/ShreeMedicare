@@ -3,8 +3,8 @@ const nodemailer = require('nodemailer');
 const transporter = nodemailer.createTransport({
   service: 'gmail',
   auth: {
-    user: 'gemini.test.hms@gmail.com',
-    pass: 'yyyyyyyyyyyyyyyy' // Replace with your app password
+    user: 'bhageshbiradar820@gmail.com',
+    pass: 'gvwv zclg fqig frpf' // Replace with your app password
   }
 });
 
@@ -24,4 +24,17 @@ async function sendPasswordResetEmail(to, token) {
   console.log("Preview URL: %s", nodemailer.getTestMessageUrl(info));
 }
 
-module.exports = { sendPasswordResetEmail };
+async function sendVerificationEmail(to, token) {
+  const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${token}`;
+  const info = await transporter.sendMail({
+    from: '"Shree Medicare HMS" <noreply@hms.com>',
+    to: to,
+    subject: "Verify Your Email Address",
+    text: `Welcome to Shree Medicare! Please verify your email address by clicking the following link:\n\n${verificationLink}\n\nIf you did not create an account, please ignore this email.`,
+    html: `<p>Welcome to Shree Medicare!</p><p>Please verify your email address by clicking the following link:</p><p><a href="${verificationLink}">${verificationLink}</a></p><p>If you did not create an account, please ignore this email.</p>`,
+  });
+
+  console.log("Verification email sent: %s", info.messageId);
+}
+
+module.exports = { sendPasswordResetEmail, sendVerificationEmail };

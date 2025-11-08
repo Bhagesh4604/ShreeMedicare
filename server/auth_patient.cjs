@@ -64,13 +64,19 @@ router.post('/register', async (req, res) => {
             });
         });
 
-        // TODO: Replace with a real SMS service (e.g., Twilio, Vonage)
-        console.log(`Sending SMS to ${contact}: Welcome to Shree Medicare! Your registration was successful.`);
+        // Send verification email and welcome SMS
+        const { sendVerificationEmail } = require('./email.cjs');
+        const { sendSms } = require('./sms.cjs');
 
-        const verificationLink = `${process.env.FRONTEND_URL}/verify-email?token=${verificationToken}`;
-        console.log('Verification link:', verificationLink);
+        await Promise.all([
+            sendVerificationEmail(email, verificationToken),
+            sendSms(contact, 'Welcome to Shree Medicare! Your registration was successful.')
+        ]).catch(err => {
+            console.error("Failed to send email or SMS during registration:", err);
+            // Don't block registration if email/SMS fails, just log the error
+        });
 
-        res.json({ success: true, message: 'Patient registered successfully! A verification link has been logged to the server console.' });
+        res.json({ success: true, message: 'Patient registered successfully! A verification email has been sent.' });
 
     } catch (err) {
         if (connection) {
