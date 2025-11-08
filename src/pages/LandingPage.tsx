@@ -34,6 +34,13 @@ export default function LandingPage({ setLoginPortal }) {
   const heroRef = useRef<HTMLDivElement>(null);
   const [showTriageModal, setShowTriageModal] = useState(false);
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'true') {
+      setLoginPortal('patient');
+    }
+  }, [setLoginPortal]);
+
   const timelineData = [
     {
       id: 1,

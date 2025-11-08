@@ -5,7 +5,7 @@ import { motion } from 'framer-motion';
 
 import apiUrl from '@/config/api';
 
-export default function PatientLogin({ onLogin, setAuthMode, setLoginPortal, verificationMessage }) {
+export default function PatientLogin({ onLogin, setAuthMode, setLoginPortal }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -13,6 +13,14 @@ export default function PatientLogin({ onLogin, setAuthMode, setLoginPortal, ver
   const [showResendVerification, setShowResendVerification] = useState(false);
   const [resendMessage, setResendMessage] = useState('');
   const [isResending, setIsResending] = useState(false);
+  const [verificationMessage, setVerificationMessage] = useState('');
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('verified') === 'true') {
+      setVerificationMessage('Your email has been verified successfully! You can now log in.');
+    }
+  }, []);
 
 
 

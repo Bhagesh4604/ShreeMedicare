@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Routes, Route, useLocation } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 
 // --- MODULE IMPORTS ---
@@ -124,17 +124,6 @@ function App() {
   console.log('App: loginPortal:', loginPortal);
   const [loginType, setLoginType] = useState(null);
   const [patientAuthMode, setPatientAuthMode] = useState('login');
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const isVerifiedParam = params.get('verified');
-    console.log('App: Detected "verified" URL parameter:', isVerifiedParam);
-    if (isVerifiedParam === 'true') {
-      console.log('App: Setting loginPortal to "patient" due to verification.');
-      setLoginPortal('patient');
-    }
-  }, [location]);
 
   const handleLogin = (user) => {
     const userWithRole = user.role ? user : { ...user, role: 'patient' };
@@ -165,10 +154,7 @@ function App() {
             }
             if (loginPortal === 'patient') {
               if (patientAuthMode === 'login') {
-                const params = new URLSearchParams(location.search);
-                const isVerifiedParam = params.get('verified');
-                const verificationMessage = isVerifiedParam === 'true' ? 'Your email has been verified successfully! You can now log in.' : '';
-                return <PatientLogin onLogin={handleLogin} setAuthMode={setPatientAuthMode} setLoginPortal={setLoginPortal} verificationMessage={verificationMessage} />;
+                return <PatientLogin onLogin={handleLogin} setAuthMode={setPatientAuthMode} setLoginPortal={setLoginPortal} />;
               }
               if (patientAuthMode === 'forgot_password') {
                 return <ForgotPassword setAuthMode={setPatientAuthMode} />;
