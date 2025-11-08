@@ -55,8 +55,10 @@ export default function EmployeeManagement() {
     const [selectedEmployee, setSelectedEmployee] = useState(null);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(null);
     const [showWelcomeEmail, setShowWelcomeEmail] = useState(null);
+    const [passwordChange, setPasswordChange] = useState(null);
     const [generatedEmail, setGeneratedEmail] = useState('');
     const [isGenerating, setIsGenerating] = useState(false);
+    const [passwordData, setPasswordData] = useState({ oldPassword: '', newPassword: '', confirmPassword: '' });
     
     const [newEmployee, setNewEmployee] = useState({
         employeeId: `EMP${Math.floor(1000 + Math.random() * 9000)}`,
@@ -141,6 +143,38 @@ export default function EmployeeManagement() {
             }
         } catch (error) { alert('Failed to connect to server.'); }
         setShowDeleteConfirm(null);
+    };
+
+    const handlePasswordDataChange = (e) => {
+        const { name, value } = e.target;
+        setPasswordData(prevState => ({ ...prevState, [name]: value }));
+    };
+
+    const handlePasswordChange = async (e) => {
+        e.preventDefault();
+        if (passwordData.newPassword !== passwordData.confirmPassword) {
+            alert("New passwords do not match.");
+            return;
+        }
+        if (!selectedEmployee) return;
+
+        try {
+            const response = await fetch(apiUrl(`/api/employees/change-password/${selectedEmployee.id}`), {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(passwordData),
+            });
+            const data = await response.json();
+            if (data.success) {
+                setModal(null);
+                fetchEmployees();
+                alert('Password updated successfully!');
+            } else {
+                alert(data.message);
+            }
+        } catch (error) {
+            alert('Failed to connect to the server.');
+        }
     };
     
     const handleGenerateEmail = async (employee) => {
@@ -238,7 +272,7 @@ export default function EmployeeManagement() {
                                     <td className="p-4 text-gray-400">{emp.departmentName}</td>
                                     <td className="p-4 capitalize text-gray-300">{emp.role}</td>
                                     <td className="p-4"><span className={`px-3 py-1 rounded-full text-xs font-semibold ${getStatusPill(emp.status)}`}>{emp.status.replace('_', ' ').toUpperCase()}</span></td>
-                                    <td className="p-4"><div className="flex items-center justify-end space-x-2"><button onClick={() => openModal('details', emp)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"><Eye size={18}/></button><button onClick={() => openModal('edit', emp)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"><Edit2 size={18}/></button><button onClick={() => setShowDeleteConfirm(emp)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full"><Trash2 size={18}/></button></div></td>
+                                    <td className="p-4"><div className="flex items-center justify-end space-x-2"><button onClick={() => openModal('details', emp)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"><Eye size={18}/></button><button onClick={() => openModal('edit', emp)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"><Edit2 size={18}/></button><button onClick={() => openModal('password', emp)} className="p-2 text-gray-400 hover:text-white hover:bg-gray-700 rounded-full"><UserCog size={18}/></button><button onClick={() => setShowDeleteConfirm(emp)} className="p-2 text-gray-400 hover:text-red-400 hover:bg-red-500/10 rounded-full"><Trash2 size={18}/></button></div></td>
                                 </motion.tr>
                             ))}
                         </motion.tbody>
@@ -284,6 +318,20 @@ export default function EmployeeManagement() {
                              <div className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-800">
                                 <button type="button" onClick={() => setModal(null)} className="px-6 py-2 bg-gray-700 rounded-lg font-semibold hover:bg-gray-600">Cancel</button>
                                 <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">Save Changes</button>
+                            </div>
+                        </form>
+                    )}
+                    {modal === 'password' && selectedEmployee && (
+                        <form onSubmit={handlePasswordChange}>
+                            <h2 className="text-2xl font-bold mb-6">Change Password for {selectedEmployee.firstName}</h2>
+                            <div className="grid grid-cols-1 gap-4">
+                                <input type="password" name="oldPassword" onChange={handlePasswordDataChange} placeholder="Old Password" value={passwordData.oldPassword} className="p-3 bg-gray-800 border-gray-700 rounded-lg" required />
+                                <input type="password" name="newPassword" onChange={handlePasswordDataChange} placeholder="New Password" value={passwordData.newPassword} className="p-3 bg-gray-800 border-gray-700 rounded-lg" required />
+                                <input type="password" name="confirmPassword" onChange={handlePasswordDataChange} placeholder="Confirm New Password" value={passwordData.confirmPassword} className="p-3 bg-gray-800 border-gray-700 rounded-lg" required />
+                            </div>
+                            <div className="flex justify-end gap-4 pt-6 mt-4 border-t border-gray-800">
+                                <button type="button" onClick={() => setModal(null)} className="px-6 py-2 bg-gray-700 rounded-lg font-semibold hover:bg-gray-600">Cancel</button>
+                                <button type="submit" className="px-6 py-2 bg-green-600 text-white rounded-lg font-semibold hover:bg-green-700">Update Password</button>
                             </div>
                         </form>
                     )}

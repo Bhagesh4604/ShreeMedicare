@@ -116,6 +116,34 @@ router.put('/:id', (req, res) => {
     }
 });
 
+router.put('/change-password/:id', (req, res) => {
+    const { id } = req.params;
+    const { oldPassword, newPassword } = req.body;
+
+    const getSql = 'SELECT password FROM employees WHERE id = ?';
+    executeQuery(getSql, [id], (err, results) => {
+        if (err) return res.status(500).json({ success: false, message: 'Server error.' });
+        if (results.length === 0) return res.status(404).json({ success: false, message: 'Employee not found.' });
+
+        const hashedPassword = results[0].password;
+
+        bcrypt.compare(oldPassword, hashedPassword, (compareErr, isMatch) => {
+            if (compareErr) return res.status(500).json({ success: false, message: 'Error comparing passwords.' });
+            if (!isMatch) return res.status(401).json({ success: false, message: 'Incorrect old password.' });
+
+            bcrypt.hash(newPassword, 10, (hashErr, hash) => {
+                if (hashErr) return res.status(500).json({ success: false, message: 'Error hashing new password.' });
+
+                const updateSql = 'UPDATE employees SET password = ? WHERE id = ?';
+                executeQuery(updateSql, [hash, id], (updateErr, updateResult) => {
+                    if (updateErr) return res.status(500).json({ success: false, message: 'Failed to update password.' });
+                    res.json({ success: true, message: 'Password updated successfully!' });
+                });
+            });
+        });
+    });
+});
+
 // DELETE an employee
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
