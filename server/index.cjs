@@ -23,7 +23,7 @@ wss.on('connection', (ws) => {
 // --- CHANGE 1: Use Render's environment variable for PORT ---
 const PORT = process.env.PORT || 8080;
 
-const allowedOrigins = ['https://localhost', 'http://localhost', 'capacitor://localhost', 'http://localhost:8100', 'https://shreemedicare1.onrender.com'];
+const allowedOrigins = ['https://localhost', 'http://localhost', 'capacitor://localhost', 'http://localhost:8100', 'https://shreemedicare1.onrender.com', '*'];
 
 const corsOptions = {
   origin: function (origin, callback) {
