@@ -4,7 +4,7 @@ import React from 'react';
 import {
   LayoutDashboard, Users, UserCog, Pill, DollarSign, Activity,
   FileText, Stethoscope, Scissors, CreditCard, Package, MessageSquare,
-  LogOut, Calendar, Sun, Moon, Clock, BarChartHorizontal, BedDouble, Syringe, Video
+  LogOut, Calendar, Sun, Moon, Clock, BarChartHorizontal, BedDouble, Syringe, Video, MapPin
 } from 'lucide-react';
 
 import { useTheme } from '../context/ThemeContext';
@@ -30,6 +30,17 @@ const SidebarItem = ({ item, isActive, onClick }) => {
 export default function NewSidebar({ activeModule, setActiveModule, userType, onLogout, isSidebarOpen, setSidebarOpen, user }) {
   console.log('userType:', userType);
   const { theme, toggleTheme } = useTheme();
+
+  const hospitalAddress = '96GF+GMJ, Tolnoor, Maharashtra 413227';
+  const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(hospitalAddress)}`;
+
+  const directionsMenuItem = {
+      id: 'directions',
+      label: 'Directions',
+      icon: MapPin,
+      action: () => window.open(googleMapsUrl, '_blank')
+  };
+
   const adminMenuItems = [
     { id: 'dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { id: 'analytics', label: 'Analytics', icon: BarChartHorizontal },
@@ -48,6 +59,7 @@ export default function NewSidebar({ activeModule, setActiveModule, userType, on
     { id: 'vendors', label: 'Vendors', icon: Package },
     { id: 'inventory', label: 'Inventory', icon: Package },
     { id: 'sms', label: 'SMS & Reports', icon: MessageSquare },
+    directionsMenuItem,
   ];
 
   const doctorMenuItems = [
@@ -60,6 +72,7 @@ export default function NewSidebar({ activeModule, setActiveModule, userType, on
     { id: 'laboratory', label: 'Laboratory', icon: Activity },
     { id: 'medical-records', label: 'Medical Records', icon: FileText },
     { id: 'surgical', label: 'Surgical', icon: Scissors },
+    directionsMenuItem,
   ];
 
   const patientMenuItems = [
@@ -71,6 +84,7 @@ export default function NewSidebar({ activeModule, setActiveModule, userType, on
     { id: 'billing', label: 'Billing', icon: DollarSign },
     { id: 'medications', label: 'Medication Tracker', icon: Clock },
     { id: 'timeline', label: 'Health Timeline', icon: BarChartHorizontal },
+    directionsMenuItem,
   ];
 
   const menuItems = userType === 'admin' ? adminMenuItems : userType === 'doctor' ? doctorMenuItems : patientMenuItems;
@@ -105,7 +119,11 @@ export default function NewSidebar({ activeModule, setActiveModule, userType, on
                 item={item}
                 isActive={activeModule === item.id}
                 onClick={() => {
-                  setActiveModule(item.id);
+                  if (item.action) {
+                    item.action();
+                  } else {
+                    setActiveModule(item.id);
+                  }
                   setSidebarOpen(false);
                 }}
               />
