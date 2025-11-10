@@ -490,7 +490,7 @@ ${result.result_text}
                             <form onSubmit={handleDetailsUpdate} className="space-y-3">
                                 <input value={details?.firstName || ''} onChange={e => setDetails({...details, firstName: e.target.value})} placeholder="First Name" className="w-full p-2 rounded-lg bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
                                 <input value={details?.lastName || ''} onChange={e => setDetails({...details, lastName: e.target.value})} placeholder="Last Name" className="w-full p-2 rounded-lg bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
-                                <input value={details?.phone || ''} onChange={e => setDetails({...details, phone: e.target.value})} placeholder="Phone" className="w-full p-2 rounded-lg bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white" />
+                                <input value={details?.phone || ''} onChange={e => setDetails({...details, phone: e.target.value})} placeholder="Phone" className="w-full p-2 rounded-lg bg-gray-100 border-gray-300 text-gray-900 dark:bg-gray-800 dark:border-gray-700 dark:text-white" required />
                                 <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-full font-semibold text-sm">Save Changes</button>
                             </form>
                         </div>
