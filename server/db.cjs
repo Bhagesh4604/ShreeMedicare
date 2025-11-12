@@ -13,17 +13,31 @@ const pool = mysql.createPool({
 
 // Create a dedicated function to execute queries
 const executeQuery = (query, params, callback) => {
-  pool.query(query, params, (err, results, fields) => {
+  pool.getConnection((err, connection) => {
     if (err) {
-      // Log the full error for better debugging
-      console.error('--- DATABASE ERROR ---');
-      console.error('Query:', query);
-      console.error('Params:', params);
-      console.error('Error:', err);
-      console.error('--- END DATABASE ERROR ---');
+      console.error('--- DATABASE CONNECTION ERROR ---');
+      console.error(err);
+      console.error('--- END DATABASE CONNECTION ERROR ---');
+      // Ensure callback is called and we don't proceed
+      return callback(err, null, null);
     }
-    // Pass the original arguments to the callback
-    callback(err, results, fields);
+    
+    connection.query(query, params, (err, results, fields) => {
+      // Always release the connection back to the pool
+      connection.release();
+
+      if (err) {
+        // Log the full error for better debugging
+        console.error('--- DATABASE QUERY ERROR ---');
+        console.error('Query:', query);
+        console.error('Params:', params);
+        console.error('Error:', err);
+        console.error('--- END DATABASE QUERY ERROR ---');
+      }
+      
+      // Pass the original arguments to the callback
+      callback(err, results, fields);
+    });
   });
 };
 
