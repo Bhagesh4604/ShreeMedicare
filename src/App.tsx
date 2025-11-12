@@ -134,6 +134,7 @@ function App() {
       case 'patient':
         navigate('/patient-dashboard');
         break;
+      case 'admin':
       case 'ROLE_DISPATCHER':
         navigate('/fleet-management');
         break;
@@ -143,7 +144,6 @@ function App() {
       case 'ROLE_ER_STAFF':
         navigate('/er-dashboard');
         break;
-      case 'admin':
       case 'doctor':
       default:
         navigate('/staff-dashboard');
