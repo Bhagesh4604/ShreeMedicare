@@ -304,7 +304,7 @@ router.post('/trips/assign', async (req, res) => {
     broadcast(req.wss, { type: 'TRIP_ASSIGNED', payload: { trip: tripDetails, ambulance: updatedAmbulance, lastLocation } });
 
     // --- Send Push Notification to assigned paramedic ---
-    const getParamedicSql = `SELECT ac.user_id FROM AmbulanceCrews ac WHERE ac.ambulance_id = ?`;
+    const getParamedicSql = `SELECT ac.user_id FROM ambulancecrews ac WHERE ac.ambulance_id = ?`;
     const paramedics = await new Promise((resolve, reject) => {
       executeQuery(getParamedicSql, [ambulance_id], (err, res) => {
         if (err) return reject(err);
